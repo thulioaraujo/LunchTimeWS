@@ -2,8 +2,6 @@
 
 This web service was created to provide the data storage for the application LunchTime. It was developed using the Java programming language on the Eclipse Java EE IDE for Web Developers and frameworks Java EE. This web service was stored on the Heroku Cloud Application Platform (https://www.heroku.com/).
 
-URL repository: https://github.com/thulioaraujo/LunchTimeWS.git
-
 The main dependencies of the LunchTimeWS are:
 
 -- Maven 1.7

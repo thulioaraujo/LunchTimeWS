@@ -3,7 +3,6 @@ package com.lunchtime.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import com.lunchtime.model.Customer;
 
@@ -15,7 +14,6 @@ import com.lunchtime.model.Customer;
  * @since 2017-01-24
  * @version 1.0
  */
-@Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
 	/**

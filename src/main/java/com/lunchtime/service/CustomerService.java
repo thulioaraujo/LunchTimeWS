@@ -2,6 +2,8 @@ package com.lunchtime.service;
 
 import java.util.List;
 
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +25,13 @@ public class CustomerService {
 	CustomerRepository customerRepository;
 
 	@Transactional
-	public Customer createCustomer(Customer customer) {
+	public Customer createCustomer(Customer customer) throws ConstraintViolationException {
 		return customerRepository.save(customer);
+	}
+	
+	@Transactional
+	public Customer findOne(long customerId) {
+		return customerRepository.findOne(customerId);
 	}
 
 	@Transactional

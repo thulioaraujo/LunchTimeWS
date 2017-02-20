@@ -1,12 +1,11 @@
 package com.lunchtime.controller;
 
-import static org.junit.Assert.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
+
+import javax.transaction.Transactional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,23 +13,21 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.google.gson.Gson;
 import com.lunchtime.LunchTimeWSApplication;
+import com.lunchtime.model.Customer;
 
 @RunWith(SpringRunner.class)
-@Transactional
-@ActiveProfiles("test")
 @SpringBootTest(classes = LunchTimeWSApplication.class)
+@ActiveProfiles("test")
 @WebAppConfiguration
 public class CustomerControllerTest {
 
@@ -39,19 +36,8 @@ public class CustomerControllerTest {
 
 	private MockMvc mockMvc;
 
-	private HttpMessageConverter mappingJackson2HttpMessageConverter;
-
 	@Autowired
 	private WebApplicationContext webApplicationContext;
-
-	@Autowired
-	void setConverters(HttpMessageConverter<?>[] converters) {
-
-		this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
-				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
-
-		assertNotNull("the JSON message converter must not be null", this.mappingJackson2HttpMessageConverter);
-	}
 
 	@Before
 	public void setup() throws Exception {
@@ -60,24 +46,25 @@ public class CustomerControllerTest {
 
 	@Test
 	@Transactional
-	@Rollback(true)
-	public void testAddCustomer() throws Exception {
-		this.mockMvc.perform(
-				get("/customer/addcustomer?customerName=Thulio&customerLogin=thuliolins@gmail.com&customerPassword=123456")
-						.contentType(contentType))
-				.andExpect(status().isOk());
+	public void shouldAddCustomerSuccessfully() throws Exception {
+		Customer customer = new Customer("Thulio", "thuliolins@gmail.com", "123456");
+		Gson gson = new Gson();
+		String customerJson = gson.toJson(customer);
 
-//		this.mockMvc.perform(
-//				get("/customer/addcustomer?customerName=Thulio&customerLogin=thuliolins@gmail.com&customerPassword=123456")
-//						.contentType(contentType))
-//				.andExpect(status().isConflict());
+		this.mockMvc.perform(post("/customer").contentType(contentType).content(customerJson))
+				.andExpect(status().isCreated());
+	}
+	
+	@Test
+	public void shouldNotAddDuplicateCustomer() throws Exception {
+		Customer customer = new Customer("Thulio", "thuliolins@gmail.com", "123456");
+		Gson gson = new Gson();
+		String customerJson = gson.toJson(customer);
 
-		// Customer customer = new Customer("Thulio", "thuliolins@gmail.com",
-		// "123456");
-		// customer = customerService.createCustomer(customer);
-		//
-		// List<Customer> customers = customerService.getAllCustomer();
-		// Assert.assertEquals(customer.getCustomerLogin(),
-		// customers.get(0).getCustomerLogin());
+		this.mockMvc.perform(post("/customer").contentType(contentType).content(customerJson))
+				.andExpect(status().isCreated());
+
+		this.mockMvc.perform(post("/customer").contentType(contentType).content(customerJson))
+				.andExpect(status().isConflict());
 	}
 }
